@@ -1,0 +1,54 @@
+FROM mdillon/postgis:9.6
+MAINTAINER Benito Zaragozí <benizar@gmail.com>
+
+# Install basic dependencies
+RUN apt-get update
+RUN apt-get install -y build-essential checkinstall apt-utils
+RUN apt-get install -y wget git-core
+RUN apt-get install -y postgresql-server-dev-9.6
+
+
+
+# Install json-schema-validation
+ADD ./install-json-schema-validation.sh /tmp/
+RUN sh /tmp/install-json-schema-validation.sh
+
+# Install geohash-extra
+ADD ./install-geohash-extra.sh /tmp/
+RUN sh /tmp/install-geohash-extra.sh
+
+
+# Install Graphics Magick
+ADD ./install-graphicsmagick.sh /tmp/install-graphicsmagick.sh
+RUN sh /tmp/install-graphicsmagick.sh
+
+# Install postpic
+ADD ./install-postpic.sh /tmp/install-postpic.sh
+RUN sh /tmp/install-postpic.sh
+
+
+# Install pg-dw
+ADD ./install-pg-dw.sh /tmp/install-pg-dw.sh
+RUN sh /tmp/install-pg-dw.sh
+
+
+# Install pg-popyramids
+ADD ./install-pg-popyramids.sh /tmp/install-pg-popyramids.sh
+RUN sh /tmp/install-pg-popyramids.sh
+
+
+RUN mkdir -p /docker-entrypoint-initdb.d
+COPY ./init-dw.sh /docker-entrypoint-initdb.d/init-dw.sh
+
+
+# add backup scripts
+ADD /dbutils/backup.sh /usr/local/bin/backup
+ADD /dbutils/restore.sh /usr/local/bin/restore
+ADD /dbutils/list-backups.sh /usr/local/bin/list-backups
+ADD /dbutils/shell.sh /usr/local/bin/shell
+
+# make them executable
+RUN chmod +x /usr/local/bin/restore
+RUN chmod +x /usr/local/bin/list-backups
+RUN chmod +x /usr/local/bin/backup
+RUN chmod +x /usr/local/bin/shell
